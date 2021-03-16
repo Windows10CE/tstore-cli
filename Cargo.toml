@@ -1,0 +1,12 @@
+[package]
+name = "tstore-cli"
+version = "0.1.0"
+authors = ["Aaron Robinson <aaronrobin1234@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.11", features = ["multipart", "gzip", "json", "blocking"] }
+clap = "2.33"
+serde_json = "1.0"
