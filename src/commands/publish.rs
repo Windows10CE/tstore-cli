@@ -44,14 +44,6 @@ pub fn create_subcommand() -> App<'static, 'static> {
                 .long("nsfw")
                 .required(false),
         )
-        .arg(
-            Arg::with_name("token")
-                .help("Service account token to use")
-                .short("t")
-                .long("token")
-                .required(true)
-                .takes_value(true),
-        )
 }
 
 pub fn process_command(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
@@ -70,7 +62,7 @@ pub fn process_command(matches: &ArgMatches) -> Result<(), Box<dyn std::error::E
 
     let res = Client::new()
         .post("https://beta.thunderstore.io/api/experimental/package/upload/")
-        .bearer_auth(matches.value_of("token").unwrap())
+        .bearer_auth(matches.value_of("token").ok_or("This command requires a service account token! Use -t, --token, the the TSTORE_TOKEN env var to set the token.")?)
         .multipart(form)
         .send()?;
 
