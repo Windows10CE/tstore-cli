@@ -3,6 +3,7 @@ extern crate clap;
 use clap::{app_from_crate, Arg};
 
 mod commands;
+mod models;
 use commands::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
