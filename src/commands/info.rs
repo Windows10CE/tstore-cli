@@ -1,6 +1,6 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use package_info::PackageInfo;
-use reqwest::{blocking::Client};
+use reqwest::{blocking::Client, StatusCode};
 
 use crate::models::package_info;
 
@@ -23,13 +23,22 @@ pub fn create_subcommand() -> App<'static, 'static> {
         )
 }
 
-pub fn proccess_command(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let res = Client::new().get(format!(
-        "https://beta.thunderstore.io/api/experimental/package/{}/{}/",
-        matches.value_of("author").unwrap(),
-        matches.value_of("package_name").unwrap()
-    ))
-    .send()?;
+pub fn proccess_command(
+    matches: &ArgMatches,
+    url: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let res = Client::new()
+        .get(format!(
+            "{}/experimental/package/{}/{}/",
+            url,
+            matches.value_of("author").unwrap(),
+            matches.value_of("package_name").unwrap()
+        ))
+        .send()?;
+
+    if res.status() != StatusCode::OK {
+        return Err(From::from("Package not found."));
+    }
 
     let json: PackageInfo = serde_json::from_str(res.text()?.as_str())?;
 

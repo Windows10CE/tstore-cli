@@ -46,7 +46,10 @@ pub fn create_subcommand() -> App<'static, 'static> {
         )
 }
 
-pub fn process_command(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
+pub fn process_command(
+    matches: &ArgMatches,
+    url: String,
+) -> Result<(), Box<dyn std::error::Error>> {
     let metadata_json = json!({
         "author_name": matches.value_of("author").unwrap(),
         "categories": matches.values_of_lossy("categories").unwrap_or(vec![]),
@@ -61,7 +64,7 @@ pub fn process_command(matches: &ArgMatches) -> Result<(), Box<dyn std::error::E
         .unwrap();
 
     let res = Client::new()
-        .post("https://beta.thunderstore.io/api/experimental/package/upload/")
+        .post(format!("{}/experimental/package/upload/", url))
         .bearer_auth(matches.value_of("token").ok_or("This command requires a service account token! Use -t, --token, the the TSTORE_TOKEN env var to set the token.")?)
         .multipart(form)
         .send()?;

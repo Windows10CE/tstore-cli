@@ -9,7 +9,8 @@ use commands::*;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut app = app_from_crate!();
 
-    app = app.arg(
+    app = app
+    .arg(
         Arg::with_name("token")
             .help("Service account token to use")
             .short("t")
@@ -17,6 +18,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .env("TSTORE_TOKEN")
             .takes_value(true)
             .global(true),
+    )
+    .arg(
+        Arg::with_name("subdomain")
+            .help("Sets the Thunderstore subdomain to use when making requests. Defaults to the RoR2 community (as it doesn't use a subdomain)")
+            .short("d")
+            .long("domain")
+            .takes_value(true)
+            .global(true)
     );
 
     app = app
@@ -25,11 +34,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let matches = app.get_matches();
 
-    if let Some(matches) = matches.subcommand_matches("publish") {
-        publish::process_command(matches)?;
+    let url: String;
+
+    if let Some(subdomain) = matches.value_of("subdomain") {
+        url = format!("https://{}.thunderstore.io/api", subdomain);
+    } else {
+        url = String::from("https://thunderstore.io/api");
     }
-    if let Some(matches) = matches.subcommand_matches("info") {
-        info::proccess_command(matches)?;
+
+    if let Some(matches) = matches.subcommand_matches("publish") {
+        publish::process_command(matches, url)?;
+    } else if let Some(matches) = matches.subcommand_matches("info") {
+        info::proccess_command(matches, url)?;
     }
 
     Ok(())
