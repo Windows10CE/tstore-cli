@@ -1,6 +1,5 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use package_info::PackageInfo;
-use reqwest::{blocking::Client, StatusCode};
 
 use crate::models::package_info;
 
@@ -27,22 +26,13 @@ pub fn proccess_command(
     matches: &ArgMatches,
     url: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let res = Client::new()
-        .get(format!(
-            "{}/experimental/package/{}/{}/",
-            url,
-            matches.value_of("author").unwrap(),
-            matches.value_of("package_name").unwrap()
-        ))
-        .send()?;
+    let info = PackageInfo::from_author_and_name(
+        matches.value_of("author").unwrap(),
+        matches.value_of("package_name").unwrap(),
+        url.as_str(),
+    )?;
 
-    if res.status() != StatusCode::OK {
-        return Err(From::from("Package not found."));
-    }
-
-    let json: PackageInfo = serde_json::from_str(res.text()?.as_str())?;
-
-    println!("{}", serde_json::to_string_pretty(&json)?);
+    println!("{}", serde_json::to_string_pretty(&info)?);
 
     Ok(())
 }
