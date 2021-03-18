@@ -30,7 +30,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     app = app
         .subcommand(publish::create_subcommand())
-        .subcommand(info::create_subcommand());
+        .subcommand(info::create_subcommand())
+        .subcommand(download::create_subcommand());
 
     let matches = app.get_matches();
 
@@ -46,6 +47,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         publish::process_command(matches, url)?;
     } else if let Some(matches) = matches.subcommand_matches("info") {
         info::proccess_command(matches, url)?;
+    } else if let Some(matches) = matches.subcommand_matches("download") {
+        download::process_command(matches, url)?;
     }
 
     Ok(())
