@@ -16,6 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .short("t")
             .long("token")
             .env("TSTORE_TOKEN")
+            .hide_env_values(true)
             .takes_value(true)
             .global(true),
     )
