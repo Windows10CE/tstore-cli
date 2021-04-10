@@ -1,7 +1,7 @@
-use std::{fs::File, io::Write};
 use crate::models::package_info::PackageInfo;
 use clap::{App, Arg, ArgMatches, SubCommand};
 use reqwest::blocking::Client;
+use std::{fs::File, io::Write};
 
 pub fn create_subcommand() -> App<'static, 'static> {
     SubCommand::with_name("download")
@@ -21,6 +21,7 @@ pub fn create_subcommand() -> App<'static, 'static> {
                 .required(true)
                 .index(2),
         )
+        .arg(Arg::with_name("recurse").short("r").long("recurse"))
 }
 
 pub fn process_command(
@@ -33,13 +34,51 @@ pub fn process_command(
         url.as_str(),
     )?;
 
-    let res = Client::new().get(&info.latest.download_url).send()?;
+    if !matches.is_present("recurse") {
+        let res = Client::new().get(&info.latest.download_url).send()?;
 
-    let mut file = File::create(format!("{}-{}.zip", &info.full_name, &info.latest.version_number))?;
+        println!("{} finished downloading!", &info.name);
 
-    print!("{}", res.url());
+        File::create(format!(
+            "{}-{}.zip",
+            &info.full_name, &info.latest.version_number
+        ))?
+        .write_all(&res.bytes()?)?;
+    } else {
+        let mut all_packages: Vec<PackageInfo> = vec![];
 
-    file.write_all(&res.bytes()?)?;
+        process_info(&mut all_packages, info, url.as_str())?;
 
+        let client = Client::new();
+
+        for package in all_packages {
+            let res = client.get(package.latest.download_url).send()?;
+
+            println!("{} finished downloading!", &package.name);
+
+            File::create(format!(
+                "{}-{}.zip",
+                &package.full_name, &package.latest.version_number
+            ))?
+            .write_all(&res.bytes()?)?;
+        }
+    }
+    Ok(())
+}
+
+fn process_info(
+    all_infos: &mut Vec<PackageInfo>,
+    package: PackageInfo,
+    url: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    for dependency in &package.latest.dependencies {
+        let dep_segments: Vec<&str> = dependency.split('-').collect();
+        let dependency_info =
+            PackageInfo::from_author_and_name(dep_segments[0], dep_segments[1], url)?;
+        process_info(all_infos, dependency_info, url)?;
+    }
+    if !all_infos.iter().any(|x| x.full_name == package.full_name) {
+        all_infos.push(package);
+    }
     Ok(())
 }
