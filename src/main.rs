@@ -1,13 +1,13 @@
 #[macro_use]
 extern crate clap;
-use clap::{app_from_crate, Arg};
+use clap::{app_from_crate, Arg, AppSettings};
 
 mod commands;
 mod models;
 use commands::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut app = app_from_crate!();
+    let mut app = app_from_crate!().setting(AppSettings::SubcommandRequiredElseHelp);
 
     app = app
     .arg(
