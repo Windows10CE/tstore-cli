@@ -3,6 +3,14 @@ name = "tstore-cli"
 version = "0.1.0"
 authors = ["Aaron Robinson <aaronrobin1234@gmail.com>"]
 edition = "2018"
+exclude = ["manifest.json", "icon.png", ".vscode/"]
+description = "CLI for https://thunderstore.io"
+documentation = "https://github.com/Windows10CE/tstore-cli"
+repository = "https://github.com/Windows10CE/tstore-cli"
+readme = "README.md"
+license = "MIT"
+keywords = ["cli", "thunderstore"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
